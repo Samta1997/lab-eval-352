@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Total Annual Sales by Product</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        table {
+            width: 50%;
+            margin: 20px 0;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h2>Total Annual Sales by Product</h2>
+    <canvas id="salesChart" width="400" height="200"></canvas>
+
+    <h3>Sales Data Table</h3>
+    <table id="salesTable">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Q1</th>
+                <th>Q2</th>
+                <th>Q3</th>
+                <th>Q4</th>
+                <th>Total Annual Sales</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Table data will be inserted here by JavaScript -->
+        </tbody>
+    </table>
+
+    <script>
+        // Fetch data from JSON file and populate the chart and table
+        async function fetchSalesData() {
+            const response = await fetch('data.json');
+            const jsonData = await response.json();
+            return jsonData.sales;
+        }
+
+        // Function to create chart and table
+        async function createSalesChart() {
+            const salesData = await fetchSalesData();
+            const productNames = salesData.map(item => item.Product);
+            const totalSales = salesData.map(item => item.Q1 + item.Q2 + item.Q3 + item.Q4);
+
+            // Populate the HTML Table
+            const tableBody = document.getElementById('salesTable').querySelector('tbody');
+            salesData.forEach(item => {
+                const totalAnnualSales = item.Q1 + item.Q2 + item.Q3 + item.Q4;
+                const row = `<tr>
+                                <td>${item.Product}</td>
+                                <td>${item.Q1}</td>
+                                <td>${item.Q2}</td>
+                                <td>${item.Q3}</td>
+                                <td>${item.Q4}</td>
+                                <td>${totalAnnualSales}</td>
+                            </tr>`;
+                tableBody.insertAdjacentHTML('beforeend', row);
+            });
+
+            // Create the bar chart using Chart.js
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: productNames,
+                    datasets: [{
+                        label: 'Total Annual Sales',
+                        data: totalSales,
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.5)', // Teal
+                            'rgba(255, 99, 132, 0.5)', // Light Red
+                            'rgba(54, 162, 235, 0.5)', // Light Blue
+                            'rgba(255, 206, 86, 0.5)'  // Yellow
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)', // Teal
+                            'rgba(255, 99, 132, 1)', // Red
+                            'rgba(54, 162, 235, 1)', // Blue
+                            'rgba(255, 206, 86, 1)'  // Yellow
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Total Annual Sales by Product'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Call the function to initialize chart and table
+        createSalesChart();
+    </script>
+</body>
+</html>
